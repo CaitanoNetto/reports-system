@@ -1,0 +1,16 @@
+{% extends 'base/base.html' %}
+{% block content %}
+<h1>Report Daily</h1>
+<table>
+    <tr>
+        <th>Field1</th>
+        <th>Field2</th>
+    </tr>
+    {% for row in rows %}
+    <tr>
+        <td>{{ row.0 }}</td>
+        <td>{{ row.1 }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

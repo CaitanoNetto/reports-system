@@ -1,0 +1,29 @@
+.main-navigation-insights {
+    height: calc(100vh - 60px);
+    background-color: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: var(--space-3);
+    border-left: 1px solid var(--color-border);
+}
+
+.main-navigation-insights__trigger {
+    width: 40px;
+    height: 40px;
+    background-color: transparent;
+    color: var(--color-gray-100);
+    border: 0;
+    transition: 0.3s all linear;
+    border-radius: var(--radius-2);
+    cursor: pointer;
+}
+
+.main-navigation-insights__trigger:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.main-navigation-insights.--is-expanded .icon {
+    transform: rotate(180deg);
+}
