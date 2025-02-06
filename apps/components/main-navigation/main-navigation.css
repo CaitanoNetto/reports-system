@@ -53,6 +53,7 @@
 .main-navigation__content {
     display: flex;
     padding-top: 60px;
+    flex-direction: row;
 }
 
 .main-navigation__content__outlet {

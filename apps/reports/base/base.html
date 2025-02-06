@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    {% include "main-navigation/main-navigation.html" %}
+    {% block content %}{% endblock %}
+
+    <script src="{% static 'main-navigation.js' %}"></script>
+    <script src="{% static 'main-navigation-menu/main-navigation-menu.js' %}"></script>
+    <script src="{% static 'main-navigation-insights/main-navigation-insights.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

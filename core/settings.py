@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
+load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
@@ -11,17 +13,14 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django.contrib.staticfiles',
+    'django.contrib.contenttypes',
+    'django.contrib.auth',
     'apps.reports',
-    'sass_processor',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -29,19 +28,19 @@ ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "apps", "reports", "base", "templates")],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            BASE_DIR / "apps/reports/reports/home",
+            BASE_DIR / "apps/reports/reports/report-daily",
+            BASE_DIR / "apps/reports/reports/report-default",
+            BASE_DIR / "apps/reports/base",
+            BASE_DIR / "apps/components",
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {},
     },
 ]
+
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
@@ -58,17 +57,22 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = []
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'pt-br'
+TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "apps/components/main-navigation",
+    BASE_DIR / "apps/reports/base",
+    BASE_DIR / "libs/design-system/css",
+    BASE_DIR / "apps/reports/reports/home",
+    BASE_DIR / "apps/reports/reports/report-daily",
+    BASE_DIR / "apps/reports/reports/report-default",
+]
 
-STATICFILES_DIRS = [os.path.join(
-    BASE_DIR, "apps", "reports", "base", "static")]
+MEDIA_URL = '/media/'
 
-SASS_PROCESSOR_ROOT = os.path.join(
-    BASE_DIR, "apps", "reports", "base", "static")
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

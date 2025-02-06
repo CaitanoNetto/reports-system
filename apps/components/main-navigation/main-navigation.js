@@ -1,9 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const btn = document.getElementById("toggleMenuButton");
-    const container = document.getElementById("navMenuContainer");
+    const headerBtn = document.getElementById("toggleMenuButton");
+    const navMenu = document.getElementById("mainNavMenu");
     let opened = false;
-    btn.addEventListener("click", function () {
+    headerBtn.addEventListener("click", function () {
         opened = !opened;
-        container.classList.toggle("--is-opened", opened);
+        if (navMenu) {
+            navMenu.classList.toggle("--is-opened", opened);
+        }
     });
 });
