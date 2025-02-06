@@ -6,16 +6,15 @@
     <meta charset="UTF-8">
     <title>{% block title %}Dashboard{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'main.css' %}">
+    <link rel="stylesheet" href="{% static 'main-navigation.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 
 <body>
     {% include "main-navigation/main-navigation.html" %}
-    {% block content %}{% endblock %}
-
+    {% block page_content %}{% endblock %}
     <script src="{% static 'main-navigation.js' %}"></script>
     <script src="{% static 'main-navigation-menu/main-navigation-menu.js' %}"></script>
-    <script src="{% static 'main-navigation-insights/main-navigation-insights.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 

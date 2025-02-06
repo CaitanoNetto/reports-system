@@ -2,7 +2,17 @@
 {% load static %}
 {% block title %}Report Default{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="/apps/reports/reports/report-default/report-default.css">
+<link rel="stylesheet" href="{% static 'report-default.css' %}">
+{% block page_content %}
+<div class="container">
+    <header class="header">
+        <h1 class="title">
+            <span class="title-a">TESTE</span>
+            <span class="title-b">PAI</span>
+        </h1>
+        <div class="yellow-bar"></div>
+    </header>
+</div>
 {% endblock %}
 {% block content %}
 {% endblock %}

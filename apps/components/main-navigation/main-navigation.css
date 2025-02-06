@@ -1,64 +1,123 @@
+:root {
+    --nav-width: 250px;
+    --header-height: 60px;
+    --bg-color: #f8f8f8;
+    --border-color: #e0e0e0;
+    --transition: 0.3s ease;
+}
+
 .main-navigation {
     display: flex;
     flex-direction: column;
 }
 
-.main-navigation__trigger {
-    position: absolute;
-    top: var(--space-3);
-    left: var(--space-3);
-    width: 40px;
-    height: 40px;
-    background-color: transparent;
-    color: var(--color-gray-100);
-    border: 0;
-    transition: 0.3s all linear;
-    border-radius: var(--radius-2);
-    cursor: pointer;
-}
-
-.main-navigation__trigger:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
 .main-navigation__header {
-    background-color: var(--color-off-white);
-    display: grid;
-    height: 60px;
-    left: 0;
+    background-color: var(--bg-color);
     position: fixed;
     top: 0;
+    left: 0;
     width: 100%;
-    z-index: 99;
-    grid-template-columns: 216px 1fr 216px;
+    height: var(--header-height);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    z-index: 1000;
 }
 
 .main-navigation__header__col {
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-bottom: 1px solid var(--color-border);
 }
 
-.main-navigation__header__col.--user-chip {
-    border-left: 1px solid var(--color-border);
-    gap: 8px;
-    display: flex;
+.main-navigation__header__col.logotype {
+    justify-content: flex-start;
 }
 
-.main-navigation__header__col.--toolbar {
-    display: flex;
+.main-navigation__trigger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
 }
 
 .main-navigation__content {
     display: flex;
-    padding-top: 60px;
-    flex-direction: row;
+    padding-top: var(--header-height);
 }
 
 .main-navigation__content__outlet {
-    width: 100%;
-    height: calc(100vh - 108px);
-    position: relative;
-    overflow: hidden;
+    flex: 1;
+    transition: margin-left var(--transition);
+}
+
+/* 🔹 Menu lateral */
+.main-navigation-menu {
+    width: var(--nav-width);
+    height: calc(100vh - var(--header-height));
+    background-color: var(--bg-color);
+    border-right: 1px solid var(--border-color);
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    transform: translateX(0);
+    transition: var(--transition);
+    z-index: 999;
+    padding: 1rem;
+}
+
+.main-navigation-menu.hidden {
+    transform: translateX(-100%);
+}
+
+/* 🔹 Botão de esconder e mostrar */
+.main-navigation-menu__toggle {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+}
+
+/* 🔹 Estilização dos grupos */
+.main-navigation-menu__groups {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.main-navigation-menu__groups__name {
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 0.5rem 0;
+    margin-top: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: #333;
+}
+
+/* 🔹 Estilização dos links */
+.main-navigation-menu__modules {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.main-navigation-menu__modules li {
+    padding: 0.5rem 0;
+}
+
+.main-navigation-menu__modules a {
+    text-decoration: none;
+    color: black;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.main-navigation-menu__modules a:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+    padding: 0.5rem;
 }

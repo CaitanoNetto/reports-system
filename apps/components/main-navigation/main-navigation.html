@@ -1,25 +1,18 @@
 <div class="main-navigation">
     <header class="main-navigation__header">
-        <div class="main-navigation__header__col --logotype">
+        <div class="main-navigation__header__col logotype">
             <button class="main-navigation__trigger" id="toggleMenuButton">
                 <span class="icon">menu</span>
             </button>
         </div>
-        <div class="main-navigation__header__col --toolbar"></div>
-        <div class="main-navigation__header__col --user-chip">
-            <span class="icon">account_circle</span>
-            <span>Olá, Usuário</span>
-        </div>
+        <div class="main-navigation__header__col toolbar"></div>
     </header>
     <div class="main-navigation__content">
         <div id="navMenuContainer">
             {% include "main-navigation/main-navigation-menu/main-navigation-menu.html" %}
         </div>
         <main class="main-navigation__content__outlet">
-            {% block content %}{% endblock %}
+            {% block page_content %}{% endblock %}
         </main>
-        <div id="navInsightsContainer">
-            {% include "main-navigation/main-navigation-insights/main-navigation-insights.html" %}
-        </div>
     </div>
 </div>

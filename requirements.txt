@@ -1,10 +1,11 @@
 asgiref==3.8.1
 Django==5.1.5
-django-sass-processor==1.4.1
-libsass==0.23.0
+django-appconf==1.0.6
 pathspec==0.12.1
 psycopg2-binary==2.9.10
 python-dotenv==1.0.1
+rcssmin==1.1.2
+rjsmin==1.2.2
 sqlparse==0.5.3
 typing_extensions==4.12.2
 tzdata==2025.1

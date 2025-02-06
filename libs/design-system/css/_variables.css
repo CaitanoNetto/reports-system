@@ -1,4 +1,5 @@
 :root {
+    /* Cores */
     --color-white: #ffffff;
     --color-off-white: #fffdfa;
     --color-border: #91919440;
@@ -21,23 +22,30 @@
     --color-gray-100: #858381;
     --color-gray-200: #626266;
     --color-gray-500: #1d1a16;
+
+    /* Fontes */
     --font-headers: "Montserrat", sans-serif;
     --font-default: "Roboto", sans-serif;
+
+    /* Espaçamentos */
     --space-0: 0;
     --space-1: 2px;
     --space-2: 4px;
     --space-3: 8px;
     --space-4: 16px;
     --space-5: 32px;
+
+    /* Radius */
     --radius-0: 0;
     --radius-1: 2px;
     --radius-2: 4px;
     --radius-3: 8px;
     --radius-4: 16px;
     --radius-5: 32px;
-    --color-yellow-50: #fef5ea;
-    --color-yellow-500: #f59d2a;
-    --color-yellow-700: #ae6f1e;
-    --color-blue-50: #ebebeb;
-    --color-blue-100: #c0c0c1;
+
+    /* Layout */
+    --nav-width: 216px;
+    --header-height: 60px;
+    --bg-color: var(--color-off-white);
+    --transition: 0.3s ease;
 }

@@ -1,28 +1,7 @@
-<nav class="main-navigation-menu" id="mainNavMenu">
-    <div class="main-navigation-menu__wrapper">
-        <ul class="main-navigation-menu__groups">
-            {% for group in groups %}
-            <li>
-                <h4 class="main-navigation-menu__groups__name">{{ group.name }}</h4>
-                <ul class="main-navigation-menu__modules">
-                    {% for module in group.modules %}
-                    <li class="main-navigation-menu__item">
-                        <a class="main-navigation-menu__link" href="{{ module.path }}" onclick="onClickMenuItem()">
-                            <div class="main-navigation-menu__link__icon">
-                                <span class="icon">{{ module.icon }}</span>
-                            </div>
-                            <div class="main-navigation-menu__link__label">
-                                <span class="label">{{ module.label }}</span>
-                            </div>
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </li>
-            {% endfor %}
-        </ul>
+<nav class="main-navigation-menu menu-opened" id="mainNavMenu">
+    <div class="main-navigation-menu__wrapper" id="menuContainer">
     </div>
-    <button type="menu" class="main-navigation-menu__trigger" id="toggleMainNavMenuButton">
+    <button type="button" class="main-navigation-menu__toggle" id="menuToggleBtn">
         <span class="icon">keyboard_double_arrow_right</span>
     </button>
 </nav>
