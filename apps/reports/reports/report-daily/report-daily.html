@@ -110,7 +110,33 @@
         </div>
 
         <div class="card card3"></div>
-        <div class="card card4"></div>
+
+        <div class="card card4">
+            <div class="dashboard-summary">
+                <div class="summary-card meta-card">
+                    <h3>Métricas do Mês</h3>
+                    <div class="summary-content">
+                        <div class="summary-item">
+                            <p class="summary-value">{{ total_meta }}</p>
+                            <p class="summary-label">Meta Mensal</p>
+                        </div>
+                        <div class="summary-item">
+                            <p class="summary-value">{{ delivered_percentage }}</p>
+                            <p class="summary-label">% Meta por Entregues</p>
+                        </div>
+                        <div class="summary-item">
+                            <p class="summary-value">{{ total_percentage }}</p>
+                            <p class="summary-label">% Meta por Total</p>
+                        </div>
+                        <div class="summary-item">
+                            <p class="summary-value">{{ total_value_month }}</p>
+                            <p class="summary-label">Valor Total do Mês</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card card5"></div>
     </div>
 </div>

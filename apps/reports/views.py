@@ -1,12 +1,46 @@
+import pandas as pd
 from django.shortcuts import render
 from django.db import connection
+from datetime import datetime
+from decimal import Decimal
+
+SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP-tqqPOb2b50FXI0k_o0nd0dhhRk5otqCZflN42C_PJ321U7askszFuFTJ1rYL43m9eqJIyaEfHSE/pub?output=csv"
 
 
 def format_currency(value):
     return "R$ {:,.2f}".format(value).replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-def get_all_order_totals():
+def fetch_meta():
+    try:
+        df = pd.read_csv(SHEET_URL, dtype={'Data': str})
+        current_month = datetime.now().strftime("%Y%m")
+
+        df_filtered = df[df["Data"] == current_month]
+
+        if df_filtered.empty:
+            print(f"No meta found for the month {current_month}")
+            return Decimal("0")
+
+        total_meta = df_filtered["Meta"].apply(
+            lambda x: Decimal(x.replace("R$", "").replace(
+                ".", "").replace(",", ".").strip())
+        ).sum()
+
+        total_meta = Decimal(total_meta) if total_meta else Decimal("1")
+
+        return total_meta
+
+    except pd.errors.ParserError:
+        print("Error: Failed to parse CSV. Ensure the spreadsheet is formatted correctly.")
+        return None
+
+    except Exception as e:
+        print(f"Error loading spreadsheet: {e}")
+        return None
+
+
+def get_monthly_order_totals():
     with connection.cursor() as cursor:
         cursor.execute("""
             WITH RefundSums AS (
@@ -15,8 +49,32 @@ def get_all_order_totals():
                 GROUP BY order_id
             )
             SELECT 
-                COUNT(DISTINCT o.id) AS total_orders, 
-                COALESCE(SUM(o.final_price - COALESCE(rs.total_refund_amount_sum, 0)), 0) AS total_value,
+                COALESCE(SUM(CASE WHEN o.current_status NOT IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') 
+                                  THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS total_value_month,
+                COALESCE(SUM(CASE WHEN o.current_status IN ('DELIVERED', 'PARTIAL_DELIVERED', 'PARTIAL_RETURN', 'PROCESSING_RETURN') 
+                                  THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS delivered_value_month
+            FROM orders o
+            LEFT JOIN RefundSums rs ON o.id = rs.order_id
+            WHERE EXTRACT(YEAR FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') = EXTRACT(YEAR FROM CURRENT_DATE)
+              AND EXTRACT(MONTH FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') = EXTRACT(MONTH FROM CURRENT_DATE)
+        """)
+
+        results = cursor.fetchone()
+
+    return Decimal(results[0]), Decimal(results[1])
+
+
+def get_daily_order_totals():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            WITH RefundSums AS (
+                SELECT order_id, SUM(total_refund_amount) AS total_refund_amount_sum
+                FROM order_returns
+                GROUP BY order_id
+            )
+            SELECT 
+                COUNT(DISTINCT CASE WHEN o.current_status NOT IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') THEN o.id END) AS total_orders, 
+                COALESCE(SUM(CASE WHEN o.current_status NOT IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS total_value,
                 COUNT(DISTINCT CASE WHEN o.current_status IN ('DELIVERED', 'PARTIAL_DELIVERED', 'PARTIAL_RETURN', 'PROCESSING_RETURN') THEN o.id END) AS delivered_orders,
                 COALESCE(SUM(CASE WHEN o.current_status IN ('DELIVERED', 'PARTIAL_DELIVERED', 'PARTIAL_RETURN', 'PROCESSING_RETURN') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS delivered_value,
                 COUNT(DISTINCT CASE WHEN o.current_status IN ('ON_ROUTE') THEN o.id END) AS on_route_orders,
@@ -31,7 +89,9 @@ def get_all_order_totals():
             LEFT JOIN RefundSums rs ON o.id = rs.order_id
             WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo')::DATE = CURRENT_DATE
         """)
+
         results = cursor.fetchone()
+
     formatted_values = [results[i] if i % 2 == 0 else format_currency(
         results[i]) for i in range(len(results))]
     return formatted_values
@@ -43,7 +103,19 @@ def daily_view(request):
      on_route_orders, on_route_value,
      in_separation_orders, in_separation_value,
      open_orders, open_value,
-     canceled_orders, canceled_value) = get_all_order_totals()
+     canceled_orders, canceled_value) = get_daily_order_totals()
+
+    (total_value_month, delivered_value_month) = get_monthly_order_totals()
+
+    total_meta = fetch_meta()
+
+    if total_meta > 0:
+        delivered_percentage = (delivered_value_month / total_meta) * 100
+        total_percentage = (total_value_month / total_meta) * 100
+    else:
+        delivered_percentage = 0
+        total_percentage = 0
+
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT s.name, COUNT(DISTINCT o.id) AS total_orders
@@ -62,6 +134,7 @@ def daily_view(request):
         results = cursor.fetchall()
     sellers = [row[0] for row in results]
     orders = [row[1] for row in results]
+
     return render(request, "report-daily.html", {
         "sellers": sellers,
         "orders": orders,
@@ -76,12 +149,15 @@ def daily_view(request):
         "total_orders_open": open_orders,
         "total_value_open": open_value,
         "total_orders_canceled": canceled_orders,
-        "total_value_canceled": canceled_value
+        "total_value_canceled": canceled_value,
+        "total_meta": format_currency(total_meta) if total_meta else "Meta not available",
+        "delivered_percentage": "{:.2f}%".format(delivered_percentage),
+        "total_percentage": "{:.2f}%".format(total_percentage),
+        "total_value_month": format_currency(total_value_month)
     })
 
 
 def home_view(request):
-    print("Carregando o home.html")
     return render(request, "home.html", {})
 
 
