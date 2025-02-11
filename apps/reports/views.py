@@ -1,10 +1,11 @@
 import pandas as pd
 from django.shortcuts import render
 from django.db import connection
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
-SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP-tqqPOb2b50FXI0k_o0nd0dhhRk5otqCZflN42C_PJ321U7askszFuFTJ1rYL43m9eqJIyaEfHSE/pub?output=csv"
+SHEET_URL_META = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP-tqqPOb2b50FXI0k_o0nd0dhhRk5otqCZflN42C_PJ321U7askszFuFTJ1rYL43m9eqJIyaEfHSE/pub?output=csv"
+SHEET_URL_FERIADOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkC6Me4aCxwyOqNwJpKoEmEA5O_9a40Hr4bbnMFkCK7L66OUPjs2No9bb-VUsR_QfUFlx5md7nhzk2/pub?output=csv"
 
 
 def format_currency(value):
@@ -13,7 +14,7 @@ def format_currency(value):
 
 def fetch_meta():
     try:
-        df = pd.read_csv(SHEET_URL, dtype={'Data': str})
+        df = pd.read_csv(SHEET_URL_META, dtype={'Data': str})
         current_month = datetime.now().strftime("%Y%m")
 
         df_filtered = df[df["Data"] == current_month]
@@ -38,6 +39,29 @@ def fetch_meta():
     except Exception as e:
         print(f"Error loading spreadsheet: {e}")
         return None
+
+
+def get_working_days():
+    df = pd.read_csv(SHEET_URL_FERIADOS, dtype={'Data': str})
+
+    df["Data"] = pd.to_datetime(df["Data"], format='%m/%d/%Y')
+
+    today = datetime.today()
+    year, month = today.year, today.month
+
+    first_day = datetime(year, month, 1)
+    last_day = (first_day.replace(month=month + 1) -
+                timedelta(days=1)) if month < 12 else datetime(year, 12, 31)
+
+    all_days = pd.date_range(start=first_day, end=last_day)
+
+    holidays = df[(df["Data"].dt.year == year) & (
+        df["Data"].dt.month == month)]["Data"].tolist()
+
+    working_days = [day for day in all_days if day.weekday()
+                    < 5 and day not in holidays]
+
+    return len(working_days)
 
 
 def get_monthly_order_totals():
@@ -97,25 +121,7 @@ def get_daily_order_totals():
     return formatted_values
 
 
-def daily_view(request):
-    (total_orders, total_value,
-     delivered_orders, delivered_value,
-     on_route_orders, on_route_value,
-     in_separation_orders, in_separation_value,
-     open_orders, open_value,
-     canceled_orders, canceled_value) = get_daily_order_totals()
-
-    (total_value_month, delivered_value_month) = get_monthly_order_totals()
-
-    total_meta = fetch_meta()
-
-    if total_meta > 0:
-        delivered_percentage = (delivered_value_month / total_meta) * 100
-        total_percentage = (total_value_month / total_meta) * 100
-    else:
-        delivered_percentage = 0
-        total_percentage = 0
-
+def get_seller_orders():
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT s.name, COUNT(DISTINCT o.id) AS total_orders
@@ -132,12 +138,52 @@ def daily_view(request):
             ORDER BY total_orders DESC
         """)
         results = cursor.fetchall()
+
     sellers = [row[0] for row in results]
     orders = [row[1] for row in results]
+
+    return sellers, orders
+
+
+def daily_view(request):
+    (total_orders, total_value,
+     delivered_orders, delivered_value,
+     on_route_orders, on_route_value,
+     in_separation_orders, in_separation_value,
+     open_orders, open_value,
+     canceled_orders, canceled_value) = get_daily_order_totals()
+
+    (total_value_month, delivered_value_month) = get_monthly_order_totals()
+
+    total_meta = fetch_meta()
+
+    working_days = get_working_days()
+
+    sellers, orders = get_seller_orders()
+
+    daily_meta_value = total_meta / \
+        Decimal(working_days) if working_days > 0 else Decimal("0")
+
+    if total_meta > 0:
+        delivered_percentage = (delivered_value_month / total_meta) * 100
+        total_percentage = (total_value_month / total_meta) * 100
+    else:
+        delivered_percentage = 0
+        total_percentage = 0
+
+    delivered_value_clean = Decimal(str(delivered_value).replace(
+        "R$", "").replace(".", "").replace(",", ".").strip())
+
+    if daily_meta_value > Decimal("0"):
+        daily_meta_percentage = (
+            delivered_value_clean / daily_meta_value) * Decimal("100")
+    else:
+        daily_meta_percentage = Decimal("0")
 
     return render(request, "report-daily.html", {
         "sellers": sellers,
         "orders": orders,
+
         "total_orders": total_orders,
         "total_value": total_value,
         "total_orders_delivered": delivered_orders,
@@ -150,10 +196,18 @@ def daily_view(request):
         "total_value_open": open_value,
         "total_orders_canceled": canceled_orders,
         "total_value_canceled": canceled_value,
-        "total_meta": format_currency(total_meta) if total_meta else "Meta not available",
+
+        "total_value_month": format_currency(total_value_month),
+        "delivered_value_month": format_currency(delivered_value_month),
+
         "delivered_percentage": "{:.2f}%".format(delivered_percentage),
         "total_percentage": "{:.2f}%".format(total_percentage),
-        "total_value_month": format_currency(total_value_month)
+
+        "total_meta": format_currency(total_meta) if total_meta else "Meta not available",
+        "daily_meta_value": format_currency(daily_meta_value),
+        "daily_meta_percentage": "{:.2f}%".format(daily_meta_percentage),
+        "working_days": working_days
+
     })
 
 
