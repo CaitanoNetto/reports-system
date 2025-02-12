@@ -64,6 +64,28 @@ def get_working_days():
     return len(working_days)
 
 
+def get_elapsed_working_days():
+    df = pd.read_csv(SHEET_URL_FERIADOS, dtype={'Data': str})
+
+    df["Data"] = pd.to_datetime(df["Data"], format='%m/%d/%Y')
+
+    today = datetime.today()
+    year, month, day = today.year, today.month, today.day
+
+    first_day = datetime(year, month, 1)
+    today_date = datetime(year, month, day)
+
+    all_days = pd.date_range(start=first_day, end=today_date)
+
+    holidays = df[(df["Data"].dt.year == year) & (
+        df["Data"].dt.month == month)]["Data"].tolist()
+
+    elapsed_working_days = [day for day in all_days if day.weekday()
+                            < 5 and day not in holidays]
+
+    return len(elapsed_working_days)
+
+
 def get_monthly_order_totals():
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -159,10 +181,18 @@ def daily_view(request):
 
     working_days = get_working_days()
 
+    elapsed_working_days = get_elapsed_working_days()
+
     sellers, orders = get_seller_orders()
 
     daily_meta_value = total_meta / \
         Decimal(working_days) if working_days > 0 else Decimal("0")
+
+    new_daily_meta_value = abs(
+        total_value_month - total_meta) / (Decimal(working_days) - Decimal(elapsed_working_days)) if working_days > 0 else Decimal("0")
+
+    variation_daily_meta = ((new_daily_meta_value -
+                            daily_meta_value) / daily_meta_value) * 100
 
     if total_meta > 0:
         delivered_percentage = (delivered_value_month / total_meta) * 100
@@ -206,7 +236,10 @@ def daily_view(request):
         "total_meta": format_currency(total_meta) if total_meta else "Meta not available",
         "daily_meta_value": format_currency(daily_meta_value),
         "daily_meta_percentage": "{:.2f}%".format(daily_meta_percentage),
-        "working_days": working_days
+        "working_days": working_days,
+        "elapsed_working_days": elapsed_working_days,
+        "new_daily_meta_value": format_currency(new_daily_meta_value),
+        "variation_daily_meta": variation_daily_meta
 
     })
 
