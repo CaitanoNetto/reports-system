@@ -1,9 +1,7 @@
 :root {
-    /* Cores */
     --color-white: #ffffff;
     --color-off-white: #fffdfa;
     --color-border: #91919440;
-    --color-blue-500: #333338;
     --color-primary-900: #4a2f0d;
     --color-primary-800: #875617;
     --color-primary-700: #ae6f1e;
@@ -14,7 +12,6 @@
     --color-primary-200: #fad29d;
     --color-primary-100: #ffcc81;
     --color-primary-50: #fef5ea;
-    --color-primary-000: #fef5ea;
     --color-secondary-50: #ebebeb;
     --color-secondary-200: #a1a1a3;
     --color-secondary-300: #76767a;
@@ -22,30 +19,26 @@
     --color-gray-100: #858381;
     --color-gray-200: #626266;
     --color-gray-500: #1d1a16;
+    --color-success: #28a745;
+    --color-warning: #ffc107;
+    --color-danger: #ff4d4d;
 
-    /* Fontes */
     --font-headers: "Montserrat", sans-serif;
     --font-default: "Roboto", sans-serif;
 
-    /* Espaçamentos */
     --space-0: 0;
     --space-1: 2px;
     --space-2: 4px;
     --space-3: 8px;
     --space-4: 16px;
     --space-5: 32px;
-
-    /* Radius */
     --radius-0: 0;
     --radius-1: 2px;
     --radius-2: 4px;
     --radius-3: 8px;
     --radius-4: 16px;
-    --radius-5: 32px;
-
-    /* Layout */
     --nav-width: 216px;
     --header-height: 60px;
-    --bg-color: var(--color-off-white);
     --transition: 0.3s ease;
+    --daily-header-height: 80px;
 }

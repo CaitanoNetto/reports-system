@@ -1,10 +1,7 @@
-:root {
-    --nav-width: 250px;
-    --header-height: 60px;
-    --bg-color: #f8f8f8;
-    --border-color: #e0e0e0;
-    --transition: 0.3s ease;
-}
+@import url("/static/_variables.css");
+@import url("/static/_typography.css");
+@import url("/static/_icons.css");
+@import url("/static/_breakpoints.css");
 
 .main-navigation {
     display: flex;
@@ -12,13 +9,13 @@
 }
 
 .main-navigation__header {
-    background-color: var(--bg-color);
+    background-color: var(--color-off-white);
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: var(--header-height);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--color-border);
     display: flex;
     align-items: center;
     padding: 0 1rem;
@@ -48,29 +45,30 @@
 
 .main-navigation__content__outlet {
     flex: 1;
+    height: 100vh - var(--header-height);
+    overflow: hidden;
+    position: relative;
     transition: margin-left var(--transition);
 }
 
-/* 🔹 Menu lateral */
 .main-navigation-menu {
     width: var(--nav-width);
     height: calc(100vh - var(--header-height));
-    background-color: var(--bg-color);
-    border-right: 1px solid var(--border-color);
+    background-color: var(--color-off-white);
+    border-right: 1px solid var(--color-border);
     position: fixed;
     top: var(--header-height);
     left: 0;
-    transform: translateX(0);
     transition: var(--transition);
     z-index: 999;
     padding: 1rem;
+    transform: translateX(0);
 }
 
 .main-navigation-menu.hidden {
     transform: translateX(-100%);
 }
 
-/* 🔹 Botão de esconder e mostrar */
 .main-navigation-menu__toggle {
     position: absolute;
     bottom: 1rem;
@@ -81,7 +79,6 @@
     font-size: 1.5rem;
 }
 
-/* 🔹 Estilização dos grupos */
 .main-navigation-menu__groups {
     list-style: none;
     padding: 0;
@@ -93,11 +90,10 @@
     font-weight: bold;
     padding: 0.5rem 0;
     margin-top: 1rem;
-    border-bottom: 1px solid var(--border-color);
-    color: #333;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-primary-900);
 }
 
-/* 🔹 Estilização dos links */
 .main-navigation-menu__modules {
     list-style: none;
     padding: 0;
@@ -110,7 +106,7 @@
 
 .main-navigation-menu__modules a {
     text-decoration: none;
-    color: black;
+    color: var(--color-primary-900);
     display: flex;
     align-items: center;
     gap: 10px;

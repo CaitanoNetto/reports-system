@@ -96,9 +96,9 @@ def get_monthly_order_totals():
             )
             SELECT 
                 COALESCE(SUM(CASE WHEN o.current_status NOT IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') 
-                                  THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS total_value_month,
+                                  THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS monthly_total_value,
                 COALESCE(SUM(CASE WHEN o.current_status IN ('DELIVERED', 'PARTIAL_DELIVERED', 'PARTIAL_RETURN', 'PROCESSING_RETURN') 
-                                  THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS delivered_value_month
+                                  THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS monthly_delivered_value
             FROM orders o
             LEFT JOIN RefundSums rs ON o.id = rs.order_id
             WHERE EXTRACT(YEAR FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') = EXTRACT(YEAR FROM CURRENT_DATE)
@@ -119,18 +119,18 @@ def get_daily_order_totals():
                 GROUP BY order_id
             )
             SELECT 
-                COUNT(DISTINCT CASE WHEN o.current_status NOT IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') THEN o.id END) AS total_orders, 
-                COALESCE(SUM(CASE WHEN o.current_status NOT IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS total_value,
-                COUNT(DISTINCT CASE WHEN o.current_status IN ('DELIVERED', 'PARTIAL_DELIVERED', 'PARTIAL_RETURN', 'PROCESSING_RETURN') THEN o.id END) AS delivered_orders,
-                COALESCE(SUM(CASE WHEN o.current_status IN ('DELIVERED', 'PARTIAL_DELIVERED', 'PARTIAL_RETURN', 'PROCESSING_RETURN') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS delivered_value,
-                COUNT(DISTINCT CASE WHEN o.current_status IN ('ON_ROUTE') THEN o.id END) AS on_route_orders,
-                COALESCE(SUM(CASE WHEN o.current_status IN ('ON_ROUTE') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS on_route_value,
-                COUNT(DISTINCT CASE WHEN o.current_status IN ('IN_SEPARATION') THEN o.id END) AS in_separation_orders,
-                COALESCE(SUM(CASE WHEN o.current_status IN ('IN_SEPARATION') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS in_separation_value,
-                COUNT(DISTINCT CASE WHEN o.current_status IN ('AWAITING_COLLECTION', 'WAITING_FOR_SELLER', 'PROCESSING_PAYMENT') THEN o.id END) AS open_orders,
-                COALESCE(SUM(CASE WHEN o.current_status IN ('AWAITING_COLLECTION', 'WAITING_FOR_SELLER', 'PROCESSING_PAYMENT') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS open_value,
-                COUNT(DISTINCT CASE WHEN o.current_status IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') THEN o.id END) AS canceled_orders,
-                COALESCE(SUM(CASE WHEN o.current_status IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') THEN o.final_price END), 0) AS canceled_value
+                COUNT(DISTINCT CASE WHEN o.current_status NOT IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') THEN o.id END) AS daily_total_orders, 
+                COALESCE(SUM(CASE WHEN o.current_status NOT IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS daily_total_value,
+                COUNT(DISTINCT CASE WHEN o.current_status IN ('DELIVERED', 'PARTIAL_DELIVERED', 'PARTIAL_RETURN', 'PROCESSING_RETURN') THEN o.id END) AS daily_delivered_orders,
+                COALESCE(SUM(CASE WHEN o.current_status IN ('DELIVERED', 'PARTIAL_DELIVERED', 'PARTIAL_RETURN', 'PROCESSING_RETURN') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS daily_delivered_value,
+                COUNT(DISTINCT CASE WHEN o.current_status IN ('ON_ROUTE') THEN o.id END) AS daily_on_route_orders,
+                COALESCE(SUM(CASE WHEN o.current_status IN ('ON_ROUTE') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS daily_on_route_value,
+                COUNT(DISTINCT CASE WHEN o.current_status IN ('IN_SEPARATION') THEN o.id END) AS daily_in_separation_orders,
+                COALESCE(SUM(CASE WHEN o.current_status IN ('IN_SEPARATION') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS daily_in_separation_value,
+                COUNT(DISTINCT CASE WHEN o.current_status IN ('AWAITING_COLLECTION', 'WAITING_FOR_SELLER', 'PROCESSING_PAYMENT') THEN o.id END) AS daily_open_orders,
+                COALESCE(SUM(CASE WHEN o.current_status IN ('AWAITING_COLLECTION', 'WAITING_FOR_SELLER', 'PROCESSING_PAYMENT') THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS daily_open_value,
+                COUNT(DISTINCT CASE WHEN o.current_status IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') THEN o.id END) AS daily_canceled_orders,
+                COALESCE(SUM(CASE WHEN o.current_status IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') THEN o.final_price END), 0) AS daily_canceled_value
             FROM orders o
             LEFT JOIN RefundSums rs ON o.id = rs.order_id
             WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo')::DATE = CURRENT_DATE
@@ -146,7 +146,8 @@ def get_daily_order_totals():
 def get_seller_orders():
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT s.name, COUNT(DISTINCT o.id) AS total_orders
+            SELECT s.name AS seller, 
+                COUNT(DISTINCT o.id) AS total_orders
             FROM orders o
             JOIN order_products op ON o.id = op.order_id
             JOIN branches b ON op.branch_id = b.id
@@ -168,45 +169,49 @@ def get_seller_orders():
 
 
 def daily_view(request):
-    (total_orders, total_value,
-     delivered_orders, delivered_value,
-     on_route_orders, on_route_value,
-     in_separation_orders, in_separation_value,
-     open_orders, open_value,
-     canceled_orders, canceled_value) = get_daily_order_totals()
 
-    (total_value_month, delivered_value_month) = get_monthly_order_totals()
-
-    total_meta = fetch_meta()
-
-    working_days = get_working_days()
-
-    elapsed_working_days = get_elapsed_working_days()
-
+    # Sellers
     sellers, orders = get_seller_orders()
 
-    daily_meta_value = total_meta / \
-        Decimal(working_days) if working_days > 0 else Decimal("0")
+    # Dias
+    working_days = get_working_days()
+    elapsed_working_days = get_elapsed_working_days()
 
-    new_daily_meta_value = abs(
-        total_value_month - total_meta) / (Decimal(working_days) - Decimal(elapsed_working_days)) if working_days > 0 else Decimal("0")
+    # Valores Diários
+    (daily_total_orders, daily_total_value,
+     daily_delivered_orders, daily_delivered_value,
+     daily_on_route_orders, daily_on_route_value,
+     daily_in_separation_orders, daily_in_separation_value,
+     daily_open_orders, daily_open_value,
+     daily_canceled_orders, daily_canceled_value) = get_daily_order_totals()
+
+    # Valores Mensais
+    (monthly_total_value, monthly_delivered_value) = get_monthly_order_totals()
+
+    # Meta
+    total_meta = fetch_meta()
+
+    initial_daily_meta_value = total_meta / \
+        Decimal(working_days) if working_days > 0 else Decimal(0)
+
+    new_daily_meta_value = abs(monthly_total_value - total_meta) / (Decimal(
+        working_days) - Decimal(elapsed_working_days)) if working_days > 0 else Decimal(0)
 
     variation_daily_meta = ((new_daily_meta_value -
-                            daily_meta_value) / daily_meta_value) * 100
+                            initial_daily_meta_value) / initial_daily_meta_value) * 100
 
-    if total_meta > 0:
-        delivered_percentage = (delivered_value_month / total_meta) * 100
-        total_percentage = (total_value_month / total_meta) * 100
-    else:
-        delivered_percentage = 0
-        total_percentage = 0
-
-    delivered_value_clean = Decimal(str(delivered_value).replace(
+    # Porcentagens
+    delivered_value_clean = Decimal(str(daily_delivered_value).replace(
         "R$", "").replace(".", "").replace(",", ".").strip())
 
-    if daily_meta_value > Decimal("0"):
+    if total_meta > 0:
+        total_percentage = (monthly_total_value / total_meta) * 100
+    else:
+        total_percentage = 0
+
+    if initial_daily_meta_value > Decimal("0"):
         daily_meta_percentage = (
-            delivered_value_clean / daily_meta_value) * Decimal("100")
+            delivered_value_clean / initial_daily_meta_value) * Decimal("100")
     else:
         daily_meta_percentage = Decimal("0")
 
@@ -214,32 +219,32 @@ def daily_view(request):
         "sellers": sellers,
         "orders": orders,
 
-        "total_orders": total_orders,
-        "total_value": total_value,
-        "total_orders_delivered": delivered_orders,
-        "total_value_delivered": delivered_value,
-        "total_orders_on_route": on_route_orders,
-        "total_value_on_route": on_route_value,
-        "total_orders_in_separation": in_separation_orders,
-        "total_value_in_separation": in_separation_value,
-        "total_orders_open": open_orders,
-        "total_value_open": open_value,
-        "total_orders_canceled": canceled_orders,
-        "total_value_canceled": canceled_value,
-
-        "total_value_month": format_currency(total_value_month),
-        "delivered_value_month": format_currency(delivered_value_month),
-
-        "delivered_percentage": "{:.2f}%".format(delivered_percentage),
-        "total_percentage": "{:.2f}%".format(total_percentage),
-
-        "total_meta": format_currency(total_meta) if total_meta else "Meta not available",
-        "daily_meta_value": format_currency(daily_meta_value),
-        "daily_meta_percentage": "{:.2f}%".format(daily_meta_percentage),
         "working_days": working_days,
         "elapsed_working_days": elapsed_working_days,
+
+        "daily_total_orders": daily_total_orders,
+        "daily_total_value": daily_total_value,
+        "daily_orders_delivered": daily_delivered_orders,
+        "daily_value_delivered": daily_delivered_value,
+        "daily_orders_on_route": daily_on_route_orders,
+        "daily_value_on_route": daily_on_route_value,
+        "daily_orders_in_separation": daily_in_separation_orders,
+        "daily_value_in_separation": daily_in_separation_value,
+        "daily_orders_open": daily_open_orders,
+        "daily_value_open": daily_open_value,
+        "daily_orders_canceled": daily_canceled_orders,
+        "daily_value_canceled": daily_canceled_value,
+
+        "monthly_total_value": format_currency(monthly_total_value),
+        "monthly_delivered_value": format_currency(monthly_delivered_value),
+
+        "total_meta": format_currency(total_meta) if total_meta else "Meta not available",
+        "initial_daily_meta_value": format_currency(initial_daily_meta_value),
         "new_daily_meta_value": format_currency(new_daily_meta_value),
-        "variation_daily_meta": variation_daily_meta
+        "variation_daily_meta": variation_daily_meta,
+
+        "total_percentage": "{:.2f}%".format(total_percentage),
+        "daily_meta_percentage": "{:.2f}%".format(daily_meta_percentage)
 
     })
 

@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     ];
 
-    let expanded = true;
+    let expanded = true; // Se `menu-opened` está no HTML, começamos como `true`.
 
     function renderMenu() {
         const container = document.getElementById("menuContainer");
@@ -27,7 +27,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         groups.forEach(group => {
             const liGroup = document.createElement("li");
-
             const h4 = document.createElement("h4");
             h4.classList.add("main-navigation-menu__groups__name");
             if (expanded) {
@@ -86,7 +85,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const toggleBtn = document.getElementById("menuToggleBtn");
         if (toggleBtn) {
             toggleBtn.classList.toggle("--is-expanded", expanded);
-            toggleBtn.querySelector(".icon").textContent = expanded ? "keyboard_double_arrow_left" : "keyboard_double_arrow_right";
+            toggleBtn.querySelector(".icon").textContent = expanded
+                ? "keyboard_double_arrow_left"
+                : "keyboard_double_arrow_right";
         }
 
         const menu = document.getElementById("mainNavMenu");
@@ -95,7 +96,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function onClickMenuItem() { }
+    function onClickMenuItem() {
+    }
 
     const toggleBtn = document.getElementById("menuToggleBtn");
     if (toggleBtn) {

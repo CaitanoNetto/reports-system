@@ -1,19 +1,9 @@
-@media (max-width:599px) {
-    /* for-phone-only */
-}
+@media (max-width: 599px) {}
 
-@media (min-width:600px) {
-    /* for-tablet-portrait-up */
-}
+@media (min-width: 600px) and (max-width: 899px) {}
 
-@media (min-width:900px) {
-    /* for-tablet-landscape-up */
-}
+@media (min-width: 900px) and (max-width: 1199px) {}
 
-@media (min-width:1200px) {
-    /* for-desktop-up */
-}
+@media (min-width: 1200px) and (max-width: 1799px) {}
 
-@media (min-width:1800px) {
-    /* for-large-desktop-up */
-}
+@media (min-width: 1800px) {}

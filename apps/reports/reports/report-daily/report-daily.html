@@ -21,11 +21,11 @@
                     <h3>Total</h3>
                     <div class="summary-content">
                         <div class="summary-item">
-                            <p class="summary-number">{{ total_orders }}</p>
+                            <p class="summary-number">{{ daily_total_orders }}</p>
                             <p class="summary-label">Pedidos</p>
                         </div>
                         <div class="summary-item">
-                            <p class="summary-value">{{ total_value }}</p>
+                            <p class="summary-value">{{ daily_total_value }}</p>
                             <p class="summary-label">Valor</p>
                         </div>
                     </div>
@@ -34,11 +34,11 @@
                     <h3>Entregue</h3>
                     <div class="summary-content">
                         <div class="summary-item">
-                            <p class="summary-number">{{ total_orders_delivered }}</p>
+                            <p class="summary-number">{{ daily_orders_delivered }}</p>
                             <p class="summary-label">Pedidos</p>
                         </div>
                         <div class="summary-item">
-                            <p class="summary-value">{{ total_value_delivered }}</p>
+                            <p class="summary-value">{{ daily_value_delivered }}</p>
                             <p class="summary-label">Valor</p>
                         </div>
                     </div>
@@ -47,11 +47,11 @@
                     <h3>Em Rota</h3>
                     <div class="summary-content">
                         <div class="summary-item">
-                            <p class="summary-number">{{ total_orders_on_route }}</p>
+                            <p class="summary-number">{{ daily_orders_on_route }}</p>
                             <p class="summary-label">Pedidos</p>
                         </div>
                         <div class="summary-item">
-                            <p class="summary-value">{{ total_value_on_route }}</p>
+                            <p class="summary-value">{{ daily_value_on_route }}</p>
                             <p class="summary-label">Valor</p>
                         </div>
                     </div>
@@ -60,11 +60,11 @@
                     <h3>Em Separação</h3>
                     <div class="summary-content">
                         <div class="summary-item">
-                            <p class="summary-number">{{ total_orders_in_separation }}</p>
+                            <p class="summary-number">{{ daily_orders_in_separation }}</p>
                             <p class="summary-label">Pedidos</p>
                         </div>
                         <div class="summary-item">
-                            <p class="summary-value">{{ total_value_in_separation }}</p>
+                            <p class="summary-value">{{ daily_value_in_separation }}</p>
                             <p class="summary-label">Valor</p>
                         </div>
                     </div>
@@ -73,11 +73,11 @@
                     <h3>Em Aberto</h3>
                     <div class="summary-content">
                         <div class="summary-item">
-                            <p class="summary-number">{{ total_orders_open }}</p>
+                            <p class="summary-number">{{ daily_orders_open }}</p>
                             <p class="summary-label">Pedidos</p>
                         </div>
                         <div class="summary-item">
-                            <p class="summary-value">{{ total_value_open }}</p>
+                            <p class="summary-value">{{ daily_value_open }}</p>
                             <p class="summary-label">Valor</p>
                         </div>
                     </div>
@@ -86,11 +86,11 @@
                     <h3>Cancelado</h3>
                     <div class="summary-content">
                         <div class="summary-item">
-                            <p class="summary-number">{{ total_orders_canceled }}</p>
+                            <p class="summary-number">{{ daily_orders_canceled }}</p>
                             <p class="summary-label">Pedidos</p>
                         </div>
                         <div class="summary-item">
-                            <p class="summary-value">{{ total_value_canceled }}</p>
+                            <p class="summary-value">{{ daily_value_canceled }}</p>
                             <p class="summary-label">Valor</p>
                         </div>
                     </div>
@@ -102,20 +102,43 @@
                 <div id="container"></div>
             </figure>
         </div>
+
+        <!-- <div class="card card3">
+            <div class="card-content">
+            </div>
+        </div> -->
+
         <div class="card card4">
-            <div class="chart-container">
-                <figure class="highcharts-figure">
-                    <div id="container-speed"></div>
-                    <div id="container-rpm"></div>
-                </figure>
+            <div class="summary-container">
+                <div class="summary-card">
+                    <h3>Meta Diária</h3>
+                    <div class="summary-content">
+                        <div class="summary-item">
+                            <p class="summary-number">{{ initial_daily_meta_value }}</p>
+                            <p class="summary-label">Meta Atual</p>
+                        </div>
+                        <div class="summary-item">
+                            <p class="summary-number">{{ new_daily_meta_value }}</p>
+                            <p class="summary-label">Nova Meta</p>
+                        </div>
+                        <div class="summary-item">
+                            <p class="summary-number">{{ variation_daily_meta|floatformat:2 }}%</p>
+                            <p class="summary-label">Variação</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- <div class="card card5">
+            <div class="card-content">
+            </div>
+        </div> -->
+
     </div>
 </div>
 
 <script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/highcharts-more.js"></script>
-<script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
@@ -123,12 +146,11 @@
 <script>
     window.sellers = {{ sellers | safe }};
     window.pedidos = {{ orders | safe }};
-    window.deliveredPercentage = parseFloat("{{ delivered_percentage|default:'0' }}".replace('%', '')) || 0;
-    window.totalPercentage = parseFloat("{{ total_percentage|default:'0' }}".replace('%', '')) || 0;
-    window.totalMeta = parseFloat("{{ total_meta|default:'0' }}".replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-    window.totalValueDelivered = parseFloat("{{ total_value_delivered|default:'0' }}".replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-    window.newDailyMetaValue = parseFloat("{{ new_daily_meta_value|default:'0' }}".replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-    window.dailyMetaPercentage = parseFloat("{{ daily_meta_percentage|default:'0' }}".replace('%', '')) || 0;
+    window.total_percentage = parseFloat("{{ total_percentage|default:'0' }}".replace('%', '')) || 0;
+    window.total_meta = parseFloat("{{ total_meta|default:'0' }}".replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+    window.daily_value_delivered = parseFloat("{{ daily_value_delivered|default:'0' }}".replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+    window.new_daily_meta_value = parseFloat("{{ new_daily_meta_value|default:'0' }}".replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+    window.daily_meta_percentage = parseFloat("{{ daily_meta_percentage|default:'0' }}".replace('%', '')) || 0;
 </script>
 
 <script src="{% static 'report-daily.js' %}"></script>

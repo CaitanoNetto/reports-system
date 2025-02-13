@@ -1,33 +1,90 @@
 document.addEventListener('DOMContentLoaded', function () {
-    if (Array.isArray(window.sellers) && window.sellers.length > 0 && Array.isArray(window.pedidos) && window.pedidos.length > 0) {
-        var data = window.sellers.map(function (seller, index) {
-            var value = window.pedidos[index] || 0;
-            var color = value >= 20 ? '#F59D2A' : value >= 10 ? '#FEC172' : '#FDE6CA';
-            return { name: seller, y: value, color: color };
-        });
+    var sellers = window.sellers;
+    var pedidos = window.pedidos;
 
-        Highcharts.chart('container', {
-            chart: { type: 'column' },
-            title: { text: 'Pedidos Hoje por Seller', style: { fontSize: '18px', fontFamily: 'Roboto, sans-serif', color: '#4A2F0D', fontWeight: 'bold' } },
-            credits: { enabled: false },
-            xAxis: { type: 'category', labels: { autoRotation: [-45, -90], style: { fontSize: '12px', fontFamily: 'Roboto, sans-serif' } } },
-            yAxis: { min: 0, title: { text: 'Quantidade de Pedidos', style: { fontFamily: 'Roboto, sans-serif', color: '#4A2F0D', fontWeight: 'bold' } } },
-            legend: { enabled: false },
-            tooltip: { pointFormat: '<b>{point.y}</b> pedidos' },
-            series: [{ name: 'Pedidos', data: data }]
-        });
-    }
-});
+    var data = sellers.map(function (seller, index) {
+        var value = pedidos[index];
+        var color;
+        if (value >= 20) {
+            color = '#F59D2A';
+        } else if (value >= 10 && value < 20) {
+            color = '#FEC172';
+        } else {
+            color = '#FDE6CA';
+        }
+        return { name: seller, y: value, color: color };
+    });
 
-document.addEventListener('DOMContentLoaded', function () {
-    const gaugeOptions = {
-        chart: { type: 'solidgauge' },
-        title: null,
-        pane: { center: ['50%', '85%'], size: '140%', startAngle: -90, endAngle: 90 },
-        yAxis: { min: 0, max: window.totalMeta, title: { text: 'Entregas' } },
-        series: [{ name: 'Entregas', data: [window.deliveredPercentage] }]
-    };
+    Highcharts.chart('container', {
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'Pedidos Hoje por Seller',
+            style: {
+                fontSize: '18px',
+                fontFamily: 'Roboto, sans-serif',
+                color: '#4A2F0D',
+                weight: 'bold'
+            }
+        },
+        credits: {
+            enabled: false
+        },
+        xAxis: {
+            title: {
+                text: 'Seller',
+                style: {
+                    fontFamily: 'Roboto, sans-serif',
+                    color: '#4A2F0D',
+                    weight: 'bold'
+                }
 
-    Highcharts.chart('container-speed', gaugeOptions);
-    Highcharts.chart('container-rpm', { ...gaugeOptions, yAxis: { min: 0, max: window.newDailyMetaValue, title: { text: 'Meta Diária' } } });
+            },
+            type: 'category',
+            labels: {
+                autoRotation: [-45, -90],
+                style: {
+                    fontSize: '12px',
+                    fontFamily: 'Roboto, sans-serif'
+                }
+            }
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Quantidade de Pedidos',
+                style: {
+                    fontFamily: 'Roboto, sans-serif',
+                    color: '#4A2F0D',
+                    weight: 'bold'
+                }
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            pointFormat: '<b>{point.y}</b> pedidos'
+        },
+        series: [{
+            name: 'Pedidos',
+            data: data,
+            dataLabels: {
+                enabled: true,
+                rotation: 0,
+                color: '#626266',
+                inside: false,
+                verticalAlign: 'bottom',
+                format: '{point.y}',
+                style: {
+                    fontSize: '15px',
+                    fontFamily: 'Roboto, sans-serif',
+                    textOutline: 'none'
+                },
+                overflow: 'none',
+                crop: false
+            }
+        }]
+    });
 });
