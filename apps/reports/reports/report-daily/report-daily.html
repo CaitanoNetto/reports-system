@@ -109,9 +109,29 @@
         </div> -->
 
         <div class="card card4">
+            <div class="gauges-container">
+                <div class="gauge-container">
+                    <p class="gauge-title">Meta Mensal</p>
+                    <div class="gauge" id="gauge-monthly">
+                        <div class="gauge__body">
+                            <div class="gauge__fill"></div>
+                            <div class="gauge__cover"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gauge-container">
+                    <p class="gauge-title">Meta Diária</p>
+                    <div class="gauge" id="gauge-daily">
+                        <div class="gauge__body">
+                            <div class="gauge__fill"></div>
+                            <div class="gauge__cover"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="summary-container">
                 <div class="summary-card">
-                    <h3>Meta Diária</h3>
+                    <h3>Meta</h3>
                     <div class="summary-content">
                         <div class="summary-item">
                             <p class="summary-number">{{ initial_daily_meta_value }}</p>
@@ -125,8 +145,21 @@
                             <p class="summary-number">{{ variation_daily_meta|floatformat:2 }}%</p>
                             <p class="summary-label">Variação</p>
                         </div>
+                        <div class="summary-item">
+                            <p class="summary-number">{{ total_meta }}</p>
+                            <p class="summary-label">Meta Mensal</p>
+                        </div>
+                        <div class="summary-item">
+                            <p class="summary-number">{{ monthly_total_value }}</p>
+                            <p class="summary-label">Total Mês</p>
+                        </div>
                     </div>
                 </div>
+            </div>
+            <div class="projection-container">
+                <h3>Finalizaremos o Mês Com:</h3>
+                <p class="projection-value">{{ monthly_projection }}</p>
+                <p class="projection-meta">Meta: {{ total_meta }}</p>
             </div>
         </div>
 
@@ -146,11 +179,12 @@
 <script>
     window.sellers = {{ sellers | safe }};
     window.pedidos = {{ orders | safe }};
-    window.total_percentage = parseFloat("{{ total_percentage|default:'0' }}".replace('%', '')) || 0;
-    window.total_meta = parseFloat("{{ total_meta|default:'0' }}".replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-    window.daily_value_delivered = parseFloat("{{ daily_value_delivered|default:'0' }}".replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-    window.new_daily_meta_value = parseFloat("{{ new_daily_meta_value|default:'0' }}".replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-    window.daily_meta_percentage = parseFloat("{{ daily_meta_percentage|default:'0' }}".replace('%', '')) || 0;
+
+    let monthly_meta_percentage = "{{ monthly_meta_percentage|default:'0' }}".replace('%', '').replace(',', '.');
+    let daily_meta_percentage = "{{ daily_meta_percentage|default:'0' }}".replace('%', '').replace(',', '.');
+
+    monthly_meta_percentage = parseFloat(monthly_meta_percentage) || 0;
+    daily_meta_percentage = parseFloat(daily_meta_percentage) || 0;
 </script>
 
 <script src="{% static 'report-daily.js' %}"></script>

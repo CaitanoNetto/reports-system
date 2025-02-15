@@ -110,6 +110,39 @@ def get_monthly_order_totals():
     return Decimal(results[0]), Decimal(results[1])
 
 
+def get_monthly_accumulated():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            WITH RefundSums AS (
+                SELECT order_id, SUM(total_refund_amount) AS total_refund_amount_sum
+                FROM order_returns
+                GROUP BY order_id
+            ),
+            DailyTotals AS (
+                SELECT 
+                    DATE(o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') AS order_date,
+                    COALESCE(SUM(CASE 
+                        WHEN o.current_status NOT IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') 
+                        THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) 
+                    END), 0) AS daily_total_value
+                FROM orders o
+                LEFT JOIN RefundSums rs ON o.id = rs.order_id
+                WHERE EXTRACT(YEAR FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') = EXTRACT(YEAR FROM CURRENT_DATE)
+                  AND EXTRACT(MONTH FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') = EXTRACT(MONTH FROM CURRENT_DATE)
+                GROUP BY order_date
+                ORDER BY order_date
+            )
+            SELECT 
+                order_date, 
+                SUM(daily_total_value) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS accumulated_value
+            FROM DailyTotals;
+        """)
+
+        results = cursor.fetchall()
+
+    return [{"date": row[0].strftime("%d/%m"), "value": float(row[1])} for row in results]
+
+
 def get_daily_order_totals():
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -187,6 +220,7 @@ def daily_view(request):
 
     # Valores Mensais
     (monthly_total_value, monthly_delivered_value) = get_monthly_order_totals()
+    monthly_accumulated_values = get_monthly_accumulated()
 
     # Meta
     total_meta = fetch_meta()
@@ -200,20 +234,34 @@ def daily_view(request):
     variation_daily_meta = ((new_daily_meta_value -
                             initial_daily_meta_value) / initial_daily_meta_value) * 100
 
+    # Projeção do mês
+    if elapsed_working_days > 0:
+        daily_average_value = monthly_total_value / \
+            Decimal(elapsed_working_days)
+    else:
+        daily_average_value = Decimal(0)
+
+    remaining_working_days = working_days - elapsed_working_days
+
+    monthly_projection = monthly_total_value + \
+        (daily_average_value * Decimal(remaining_working_days))
+
     # Porcentagens
     delivered_value_clean = Decimal(str(daily_delivered_value).replace(
         "R$", "").replace(".", "").replace(",", ".").strip())
 
     if total_meta > 0:
-        total_percentage = (monthly_total_value / total_meta) * 100
+        monthly_meta_percentage = (monthly_total_value / total_meta) * 100
     else:
-        total_percentage = 0
+        monthly_meta_percentage = 0
 
     if initial_daily_meta_value > Decimal("0"):
         daily_meta_percentage = (
             delivered_value_clean / initial_daily_meta_value) * Decimal("100")
     else:
         daily_meta_percentage = Decimal("0")
+
+    # print("{:.2f}%".format(daily_meta_percentage))
 
     return render(request, "report-daily.html", {
         "sellers": sellers,
@@ -237,14 +285,17 @@ def daily_view(request):
 
         "monthly_total_value": format_currency(monthly_total_value),
         "monthly_delivered_value": format_currency(monthly_delivered_value),
+        "monthly_accumulated_values": monthly_accumulated_values,
 
         "total_meta": format_currency(total_meta) if total_meta else "Meta not available",
         "initial_daily_meta_value": format_currency(initial_daily_meta_value),
         "new_daily_meta_value": format_currency(new_daily_meta_value),
         "variation_daily_meta": variation_daily_meta,
 
-        "total_percentage": "{:.2f}%".format(total_percentage),
-        "daily_meta_percentage": "{:.2f}%".format(daily_meta_percentage)
+        "monthly_projection": format_currency(monthly_projection),
+
+        "monthly_meta_percentage": "{:.2f}%".format(monthly_meta_percentage),
+        "daily_meta_percentage": "{:.2f}%".format(daily_meta_percentage),
 
     })
 

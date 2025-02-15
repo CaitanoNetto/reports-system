@@ -88,3 +88,27 @@ document.addEventListener('DOMContentLoaded', function () {
         }]
     });
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    function setGaugeValue(gaugeId, value) {
+        const gauge = document.getElementById(gaugeId);
+        if (!gauge) return;
+
+        const fill = gauge.querySelector(".gauge__fill");
+        const cover = gauge.querySelector(".gauge__cover");
+
+        let numericValue = parseFloat(value);
+        if (isNaN(numericValue) || numericValue < 0) {
+            numericValue = 0;
+        } else if (numericValue > 100) {
+            numericValue = 100;
+        }
+
+        let rotation = (numericValue / 100) * 180;
+        fill.style.transform = `rotate(${rotation}deg)`;
+        cover.textContent = `${numericValue.toFixed(2)}%`;
+    }
+
+    setGaugeValue("gauge-monthly", monthly_meta_percentage);
+    setGaugeValue("gauge-daily", daily_meta_percentage);
+});
