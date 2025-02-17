@@ -1,18 +1,22 @@
-<div class="main-navigation">
-    <header class="main-navigation__header">
-        <div class="main-navigation__header__col logotype">
-            <button class="main-navigation__trigger" id="menuToggleBtn">
-                <span class="icon">menu</span>
-            </button>
+{% extends "base.html" %}
+{% block page_content %}
+
+    <div class="main-navigation">
+        <header class="main-navigation__header">
+            <div class="main-navigation__header__col logotype">
+                <button class="main-navigation__trigger" id="menuToggleBtn">
+                    <span class="icon">menu</span>
+                </button>
+            </div>
+            <div class="main-navigation__header__col toolbar"></div>
+        </header>
+        <div class="main-navigation__content">
+            <div id="navMenuContainer">
+                {% include "main-navigation/main-navigation-menu/main-navigation-menu.html" %}
+            </div>
+            <main class="main-navigation__content__outlet">
+                {% block main_navigation_content %}{% endblock %}
+            </main>
         </div>
-        <div class="main-navigation__header__col toolbar"></div>
-    </header>
-    <div class="main-navigation__content">
-        <div id="navMenuContainer">
-            {% include "main-navigation/main-navigation-menu/main-navigation-menu.html" %}
-        </div>
-        <main class="main-navigation__content__outlet">
-            {% block page_content %}{% endblock %}
-        </main>
     </div>
-</div>
+{% endblock %}
