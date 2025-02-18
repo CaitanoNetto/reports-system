@@ -1,6 +1,7 @@
 @import url("/static/_variables.css");
 @import url("/static/_typography.css");
 @import url("/static/_icons.css");
+@import url("/static/_defaults.css");
 @import url("/static/_breakpoints.css");
 
 html,
