@@ -6,10 +6,37 @@ from decimal import Decimal
 
 SHEET_URL_META = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP-tqqPOb2b50FXI0k_o0nd0dhhRk5otqCZflN42C_PJ321U7askszFuFTJ1rYL43m9eqJIyaEfHSE/pub?output=csv"
 SHEET_URL_FERIADOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkC6Me4aCxwyOqNwJpKoEmEA5O_9a40Hr4bbnMFkCK7L66OUPjs2No9bb-VUsR_QfUFlx5md7nhzk2/pub?output=csv"
+SHEET_URL_META_REGIONAL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGmIIabdrHcv1qPghnOxwjgQ1nfCPF7f8lSfN9UDhYVnYTDgg0EWsJv_HhUwl6MGPOtUVp1MNaatfz/pub?output=csv"
 
 
 def format_currency(value):
     return "R$ {:,.2f}".format(value).replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def fetch_meta_regional():
+    try:
+        df = pd.read_csv(SHEET_URL_META_REGIONAL, dtype={'Data': str})
+        current_month = datetime.now().strftime("%Y%m")
+        df_filtered = df[df["Data"] == current_month]
+
+        if df_filtered.empty:
+            print(f"No meta found for the month {current_month}")
+            return {"São Paulo": Decimal("0"), "Campinas": Decimal("0"), "Belo Horizonte": Decimal("0")}
+
+        meta_values = {
+            row["Local"]: Decimal(row["Meta"].replace(
+                "R$", "").replace(".", "").replace(",", ".").strip())
+            for _, row in df_filtered.iterrows()
+        }
+
+        return {
+            "São Paulo": meta_values.get("São Paulo", Decimal("0")),
+            "Campinas": meta_values.get("Campinas", Decimal("0")),
+            "Belo Horizonte": meta_values.get("Belo Horizonte", Decimal("0"))
+        }
+    except Exception as e:
+        print(f"Error loading regional meta spreadsheet: {e}")
+        return {"São Paulo": Decimal("0"), "Campinas": Decimal("0"), "Belo Horizonte": Decimal("0")}
 
 
 def fetch_meta():
@@ -93,21 +120,46 @@ def get_monthly_order_totals():
                 SELECT order_id, SUM(total_refund_amount) AS total_refund_amount_sum
                 FROM order_returns
                 GROUP BY order_id
+            ),
+            OrderData AS (
+                SELECT 
+                    o.id,
+                    o.final_price - COALESCE(rs.total_refund_amount_sum, 0) AS final_value,
+                    o.current_status,
+                    COALESCE(addr.state, eb.data->'billingAddress'->>'state') AS buyer_state,
+                    COALESCE(addr.city, eb.data->'billingAddress'->>'city') AS buyer_city
+                FROM orders o
+                LEFT JOIN RefundSums rs ON o.id = rs.order_id
+                LEFT JOIN external_buyers eb ON eb.id = o.external_buyer_id
+                LEFT JOIN (
+                    SELECT DISTINCT ON (lba.legal_buyer_id) 
+                        lba.legal_buyer_id, 
+                        a.state, 
+                        a.city
+                    FROM legal_buyer_addresses lba
+                    JOIN addresses a ON a.id = lba.addresses_id AND a.type = 'SHIPPING'
+                    ORDER BY lba.legal_buyer_id
+                ) AS addr ON addr.legal_buyer_id = o.person_id
+                WHERE EXTRACT(YEAR FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') = EXTRACT(YEAR FROM CURRENT_DATE)
+                AND EXTRACT(MONTH FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') = EXTRACT(MONTH FROM CURRENT_DATE)
             )
             SELECT 
-                COALESCE(SUM(CASE WHEN o.current_status NOT IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') 
-                                  THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS monthly_total_value,
-                COALESCE(SUM(CASE WHEN o.current_status IN ('DELIVERED', 'PARTIAL_DELIVERED', 'PARTIAL_RETURN', 'PROCESSING_RETURN') 
-                                  THEN o.final_price - COALESCE(rs.total_refund_amount_sum, 0) END), 0) AS monthly_delivered_value
-            FROM orders o
-            LEFT JOIN RefundSums rs ON o.id = rs.order_id
-            WHERE EXTRACT(YEAR FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') = EXTRACT(YEAR FROM CURRENT_DATE)
-              AND EXTRACT(MONTH FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') = EXTRACT(MONTH FROM CURRENT_DATE)
+                COALESCE(SUM(CASE WHEN od.current_status NOT IN ('CANCELED', 'TOTAL_RETURN', 'PAYMENT_REFUSED', 'MISPLACED') 
+                                THEN od.final_value END), 0) AS monthly_total_value,
+                COALESCE(SUM(CASE WHEN od.current_status IN ('DELIVERED', 'PARTIAL_DELIVERED', 'PARTIAL_RETURN', 'PROCESSING_RETURN') 
+                                THEN od.final_value END), 0) AS monthly_delivered_value,
+                COALESCE(SUM(CASE WHEN od.buyer_state = 'SP' AND od.buyer_city = 'Campinas' 
+                                THEN od.final_value END), 0) AS monthly_campinas_value,
+                COALESCE(SUM(CASE WHEN od.buyer_state = 'SP' AND od.buyer_city <> 'Campinas' 
+                                THEN od.final_value END), 0) AS monthly_sao_paulo_value,
+                COALESCE(SUM(CASE WHEN od.buyer_state = 'MG' 
+                                THEN od.final_value END), 0) AS monthly_belo_horizonte_value
+            FROM OrderData od;
         """)
 
         results = cursor.fetchone()
 
-    return Decimal(results[0]), Decimal(results[1])
+    return Decimal(results[0]), Decimal(results[1]), Decimal(results[2]), Decimal(results[3]), Decimal(results[4])
 
 
 def get_monthly_accumulated():
@@ -219,7 +271,8 @@ def daily_view(request):
      daily_canceled_orders, daily_canceled_value) = get_daily_order_totals()
 
     # Valores Mensais
-    (monthly_total_value, monthly_delivered_value) = get_monthly_order_totals()
+    (monthly_total_value, monthly_delivered_value, monthly_campinas_value,
+     monthly_sao_paulo_value, monthly_belo_horizonte_value) = get_monthly_order_totals()
     monthly_accumulated_values = get_monthly_accumulated()
 
     # Meta
@@ -233,6 +286,8 @@ def daily_view(request):
 
     variation_daily_meta = ((new_daily_meta_value -
                             initial_daily_meta_value) / initial_daily_meta_value) * 100
+
+    meta_regional = fetch_meta_regional()
 
     # Projeção do mês
     if elapsed_working_days > 0:
@@ -261,7 +316,30 @@ def daily_view(request):
     else:
         daily_meta_percentage = Decimal("0")
 
+    if meta_regional["São Paulo"] > 0:
+        monthly_sao_paulo_meta_percentage = (
+            monthly_sao_paulo_value / meta_regional["São Paulo"]) * 100
+        if meta_regional["Campinas"] > 0:
+            monthly_campinas_meta_percentage = (
+                monthly_campinas_value / meta_regional["Campinas"]) * 100
+            if meta_regional["Belo Horizonte"] > 0:
+                monthly_belo_horizonte_meta_percentage = (
+                    monthly_belo_horizonte_value / meta_regional["Belo Horizonte"]) * 100
+            else:
+                monthly_belo_horizonte_meta_percentage = 0
+        else:
+            monthly_campinas_meta_percentage = 0
+    else:
+        monthly_sao_paulo_meta_percentage = 0
+
     # print("{:.2f}%".format(daily_meta_percentage))
+
+    print(f"São Paulo: {monthly_sao_paulo_meta_percentage}")
+    print(f"Campinas: {monthly_campinas_meta_percentage}")
+    print(f"Belo Horizonte: {monthly_belo_horizonte_meta_percentage}")
+    print(f"São Paulo: {monthly_sao_paulo_meta_percentage}")
+    print(f"Mensal: {monthly_meta_percentage}")
+    print(f"Diário: {daily_meta_percentage}")
 
     return render(request, "report-daily.html", {
         "sellers": sellers,
@@ -287,15 +365,25 @@ def daily_view(request):
         "monthly_delivered_value": format_currency(monthly_delivered_value),
         "monthly_accumulated_values": monthly_accumulated_values,
 
+        "monthly_campinas_value": format_currency(monthly_campinas_value),
+        "monthly_sao_paulo_value": format_currency(monthly_sao_paulo_value),
+        "monthly_belo_horizonte_value": format_currency(monthly_belo_horizonte_value),
+
         "total_meta": format_currency(total_meta) if total_meta else "Meta not available",
         "initial_daily_meta_value": format_currency(initial_daily_meta_value),
         "new_daily_meta_value": format_currency(new_daily_meta_value),
         "variation_daily_meta": variation_daily_meta,
+        "meta_regional_sao_paulo": meta_regional["São Paulo"],
+        "meta_regional_campinas": meta_regional["Campinas"],
+        "meta_regional_belo_horizonte": meta_regional["Belo Horizonte"],
 
         "monthly_projection": format_currency(monthly_projection),
 
         "monthly_meta_percentage": "{:.2f}%".format(monthly_meta_percentage),
         "daily_meta_percentage": "{:.2f}%".format(daily_meta_percentage),
+        "monthly_sao_paulo_meta_percentage": "{:.2f}%".format(monthly_sao_paulo_meta_percentage),
+        "monthly_campinas_meta_percentage": "{:.2f}%".format(monthly_campinas_meta_percentage),
+        "monthly_belo_horizonte_meta_percentage": "{:.2f}%".format(monthly_belo_horizonte_meta_percentage),
 
     })
 

@@ -106,9 +106,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let rotation = (numericValue / 100) * 180;
         fill.style.transform = `rotate(${rotation}deg)`;
-        cover.textContent = `${numericValue.toFixed(2)}%`;
+        cover.textContent = `${numericValue.toFixed(2).replace('.', ',')}%`;
+        let existingLabels = gauge.parentElement.querySelector(".gauge__labels");
+        if (existingLabels) {
+            existingLabels.remove();
+        }
+
+        // Criar e posicionar labels corretamente
+        let labelsContainer = document.createElement("div");
+        labelsContainer.classList.add("gauge__labels");
+        gauge.parentElement.appendChild(labelsContainer);
+
+        const leftLabel = document.createElement("span");
+        leftLabel.classList.add("gauge__label-left");
+        leftLabel.textContent = "0,00%";
+        labelsContainer.appendChild(leftLabel);
+
+        const rightLabel = document.createElement("span");
+        rightLabel.classList.add("gauge__label-right");
+        rightLabel.textContent = "100,00%";
+        labelsContainer.appendChild(rightLabel);
     }
 
     setGaugeValue("gauge-monthly", monthly_meta_percentage);
     setGaugeValue("gauge-daily", daily_meta_percentage);
+    setGaugeValue("gauge-sao-paulo", monthly_sao_paulo_meta_percentage);
+    setGaugeValue("gauge-campinas", monthly_campinas_meta_percentage);
+    setGaugeValue("gauge-belo-horizonte", monthly_belo_horizonte_meta_percentage);
+
 });
