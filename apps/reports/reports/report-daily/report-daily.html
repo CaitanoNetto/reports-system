@@ -164,10 +164,57 @@
             </div>
         </div>
 
-        <!-- <div class="card card5">
-            <div class="card-content">
+        <div class="card card5">
+            <div class="gauges-container">
+                <div class="gauge-container">
+                    <p class="gauge-title">São Paulo</p>
+                    <div class="gauge" id="gauge-sao-paulo">
+                        <div class="gauge__body">
+                            <div class="gauge__fill"></div>
+                            <div class="gauge__cover"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gauge-container">
+                    <p class="gauge-title">Campinas</p>
+                    <div class="gauge" id="gauge-campinas">
+                        <div class="gauge__body">
+                            <div class="gauge__fill"></div>
+                            <div class="gauge__cover"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gauge-container">
+                    <p class="gauge-title">Belo Horizonte</p>
+                    <div class="gauge" id="gauge-belo-horizonte">
+                        <div class="gauge__body">
+                            <div class="gauge__fill"></div>
+                            <div class="gauge__cover"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div> -->
+            <div class="summary-container">
+                <div class="summary-card">
+                    <h3>Região</h3>
+                    <div class="summary-content">
+                        <div class="summary-item">
+                            <p class="summary-number">{{ monthly_sao_paulo_value }}</p>
+                            <p class="summary-label">São Paulo</p>
+                        </div>
+                        <div class="summary-item">
+                            <p class="summary-number">{{ monthly_campinas_value }}</p>
+                            <p class="summary-label">Campinas</p>
+                        </div>
+                        <div class="summary-item">
+                            <p class="summary-number">{{ monthly_belo_horizonte_value }}</p>
+                            <p class="summary-label">Belo Horizonte</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     </div>
 </div>
@@ -183,9 +230,15 @@
 
     let monthly_meta_percentage = "{{ monthly_meta_percentage|default:'0' }}".replace('%', '').replace(',', '.');
     let daily_meta_percentage = "{{ daily_meta_percentage|default:'0' }}".replace('%', '').replace(',', '.');
+    let monthly_sao_paulo_meta_percentage = "{{ monthly_sao_paulo_meta_percentage|default:'0' }}".replace('%', '').replace(',', '.');
+    let monthly_campinas_meta_percentage = "{{ monthly_campinas_meta_percentage|default:'0' }}".replace('%', '').replace(',', '.');
+    let monthly_belo_horizonte_meta_percentage = "{{ monthly_belo_horizonte_meta_percentage|default:'0' }}".replace('%', '').replace(',', '.');
 
     monthly_meta_percentage = parseFloat(monthly_meta_percentage) || 0;
     daily_meta_percentage = parseFloat(daily_meta_percentage) || 0;
+    monthly_sao_paulo_meta_percentage = parseFloat(monthly_sao_paulo_meta_percentage) || 0;
+    monthly_campinas_meta_percentage = parseFloat(monthly_campinas_meta_percentage) || 0;
+    monthly_belo_horizonte_meta_percentage = parseFloat(monthly_belo_horizonte_meta_percentage) || 0;
 </script>
 
 <script src="{% static 'report-daily.js' %}"></script>

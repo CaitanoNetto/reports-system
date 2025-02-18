@@ -268,14 +268,37 @@
     justify-content: space-around;
     align-items: center;
     width: 100%;
-    padding: 15px;
+    padding: 20px;
 }
 
 .gauge-container {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 50%;
+}
+
+.gauge__labels {
+    position: absolute;
+    width: 90%;
+    top: 40%;
+    left: 5%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: bold;
+    color: #4A2F0D;
+}
+
+.gauge__label-left {
+    position: absolute;
+    left: 0;
+}
+
+.gauge__label-right {
+    position: absolute;
+    right: 0;
 }
 
 .gauge-title {
@@ -291,14 +314,14 @@
     max-width: 180px;
     font-family: "Roboto", sans-serif;
     font-size: 20px;
-    color: #004033;
+    color: #4A2F0D;
 }
 
 .gauge__body {
     width: 100%;
     height: 0;
     padding-bottom: 50%;
-    background: #b4c0be;
+    background: #F3F2F1;
     position: relative;
     border-top-left-radius: 100% 200%;
     border-top-right-radius: 100% 200%;
@@ -311,7 +334,7 @@
     left: 0;
     width: inherit;
     height: 100%;
-    background: #009578;
+    background: #F59D2A;
     transform-origin: center top;
     transform: rotate(0.25turn);
     transition: transform 0.6s ease-out;
