@@ -1,22 +1,20 @@
 {% extends "base.html" %}
 {% block page_content %}
-
     <div class="main-navigation">
-        <header class="main-navigation__header">
-            <div class="main-navigation__header__col logotype">
-                <button class="main-navigation__trigger" id="menuToggleBtn">
-                    <span class="icon">menu</span>
-                </button>
+        <header class="main-navigation-header">
+            <div>
+                <a routerLink="/" title="Peça Aí - Backoffice">
+                    {% include "logotype/logotype.html" %}
+                </a>
             </div>
-            <div class="main-navigation__header__col toolbar"></div>
         </header>
+
         <div class="main-navigation__content">
-            <div id="navMenuContainer">
-                {% include "main-navigation/main-navigation-menu/main-navigation-menu.html" %}
-            </div>
+            {% include "main-navigation/main-navigation-menu/main-navigation-menu.html" %}
             <main class="main-navigation__content__outlet">
                 {% block main_navigation_content %}{% endblock %}
             </main>
         </div>
     </div>
+
 {% endblock %}

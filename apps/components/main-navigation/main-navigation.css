@@ -1,119 +1,95 @@
 @import url("/static/_variables.css");
 @import url("/static/_typography.css");
 @import url("/static/_icons.css");
+@import url("/static/_defaults.css");
 @import url("/static/_breakpoints.css");
+
+.main-navigation-header {
+    align-items: center;
+    background-color: var(--color-off-white);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    height: 64px;
+    justify-content: space-between;
+    padding: 0 12px;
+    position: fixed;
+    width: 100vw;
+    padding: 2em;
+    z-index: 999;
+}
+
+.main-navigation-header__trigger {
+    background-color: transparent;
+    border: 0;
+    border-radius: var(--radius-2);
+    color: var(--color-gray-100);
+    cursor: pointer;
+    height: 40px;
+    line-height: 0;
+    margin-right: 12px;
+    transition: 0.3s all linear;
+    width: 40px;
+}
+
+.main-navigation-header__trigger:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Removido @include for-tablet-landscape-up porque é SCSS. Precisa ser substituído por um @media */
+@media (min-width: 1024px) {
+
+    /* Exemplo para tablet-landscape-up */
+    .main-navigation-header__trigger {
+        display: none;
+    }
+}
+
+.main-navigation-header__account {
+    align-items: center;
+    display: flex;
+    height: 64px;
+    padding-left: 12px;
+}
+
+.main-navigation-header__account__user {
+    align-items: center;
+    display: flex;
+}
+
+.main-navigation-header__account__logout {
+    margin-left: 12px;
+    padding-left: 12px;
+}
+
+.main-navigation-header__account__logout button {
+    background-color: transparent;
+    border: 0;
+    border-radius: var(--radius-2);
+    color: var(--color-gray-100);
+    cursor: pointer;
+    height: 40px;
+    line-height: 0;
+    transition: 0.3s all linear;
+    width: 40px;
+}
+
+.main-navigation-header__account__logout button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
 
 .main-navigation {
     display: flex;
     flex-direction: column;
 }
 
-.main-navigation__header {
-    background-color: var(--color-off-white);
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: var(--header-height);
-    border-bottom: 1px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    padding: 0 1rem;
-    z-index: 1000;
-}
-
-.main-navigation__header__col {
-    display: flex;
-    align-items: center;
-}
-
-.main-navigation__header__col.logotype {
-    justify-content: flex-start;
-}
-
-.main-navigation__trigger {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.5rem;
-}
-
 .main-navigation__content {
     display: flex;
-    padding-top: var(--header-height);
+    padding-top: 60px;
 }
 
 .main-navigation__content__outlet {
     flex: 1;
-    height: 100vh - var(--header-height);
-    overflow: hidden;
-    position: relative;
-    transition: margin-left var(--transition);
-}
-
-.main-navigation-menu {
-    width: var(--nav-width);
-    height: calc(100vh - var(--header-height));
-    background-color: var(--color-off-white);
-    border-right: 1px solid var(--color-border);
-    position: fixed;
-    top: var(--header-height);
-    left: 0;
-    transition: var(--transition);
-    z-index: 999;
-    padding: 1rem;
-    transform: translateX(0);
-}
-
-.main-navigation-menu.hidden {
-    transform: translateX(-100%);
-}
-
-.main-navigation-menu__toggle {
-    position: absolute;
-    bottom: 1rem;
-    left: 1rem;
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    font-size: 1.5rem;
-}
-
-.main-navigation-menu__groups {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.main-navigation-menu__groups__name {
-    font-size: 1rem;
-    font-weight: bold;
-    padding: 0.5rem 0;
-    margin-top: 1rem;
-    border-bottom: 1px solid var(--color-border);
-    color: var(--color-primary-900);
-}
-
-.main-navigation-menu__modules {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.main-navigation-menu__modules li {
-    padding: 0.5rem 0;
-}
-
-.main-navigation-menu__modules a {
-    text-decoration: none;
-    color: var(--color-primary-900);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.main-navigation-menu__modules a:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    border-radius: 5px;
-    padding: 0.5rem;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    /* padding: 24px; */
 }

@@ -1,0 +1,55 @@
+*,
+*::after,
+*::before {
+    box-sizing: border-box;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--color-primary-000);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-primary-100);
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--color-primary-100);
+    }
+}
+
+html {
+    font-size: 62.5%;
+}
+
+body {
+    background-color: var(--color-white);
+    color: var(--color-gray-500);
+    font-family: var(--font-default);
+    font-size: 1.4rem;
+    overflow-y: scroll;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-headers);
+    font-weight: 600;
+}
+
+hr {
+    background-color: var(--color-border);
+    border: none;
+    height: 1px;
+    margin: 24px 0;
+}
