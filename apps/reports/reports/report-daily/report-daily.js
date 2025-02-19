@@ -3,91 +3,97 @@ document.addEventListener('DOMContentLoaded', function () {
     var pedidos = window.pedidos;
 
     var data = sellers.map(function (seller, index) {
-        var value = pedidos[index];
-        var color;
-        if (value >= 20) {
-            color = '#F59D2A';
-        } else if (value >= 10 && value < 20) {
-            color = '#FEC172';
-        } else {
-            color = '#FDE6CA';
-        }
-        return { name: seller, y: value, color: color };
+        return {
+            name: seller,
+            value: pedidos[index]
+        };
     });
 
-    Highcharts.chart('container', {
-        chart: {
-            type: 'column'
-        },
+    var chartDom = document.getElementById('container');
+    var myChart = echarts.init(chartDom);
+    var option;
+
+    option = {
         title: {
             text: 'Pedidos Hoje por Seller',
-            style: {
-                fontSize: '18px',
+            left: 'center',
+            textStyle: {
+                fontSize: 18,
                 fontFamily: 'Roboto, sans-serif',
                 color: '#4A2F0D',
-                weight: 'bold'
+                fontWeight: 'bold'
             }
         },
-        credits: {
-            enabled: false
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        grid: {
+            left: '5%',
+            right: '5%',
+            bottom: '5%',
+            containLabel: true
         },
         xAxis: {
-            title: {
-                text: 'Seller',
-                style: {
-                    fontFamily: 'Roboto, sans-serif',
-                    color: '#4A2F0D',
-                    weight: 'bold'
-                }
-
-            },
             type: 'category',
-            labels: {
-                autoRotation: [-45, -90],
-                style: {
-                    fontSize: '12px',
-                    fontFamily: 'Roboto, sans-serif'
+            data: data.map(item => item.name),
+            axisLabel: {
+                rotate: 45,
+                fontSize: 12,
+                fontFamily: 'Roboto, sans-serif',
+                color: '#4A2F0D',
+                fontWeight: 'bold'
+            },
+            axisLine: {
+                lineStyle: {
+                    color: '#4A2F0D'
                 }
             }
         },
         yAxis: {
-            min: 0,
-            title: {
-                text: 'Quantidade de Pedidos',
-                style: {
+            type: 'value',
+            axisLabel: {
+                fontSize: 12,
+                fontFamily: 'Roboto, sans-serif',
+                color: '#4A2F0D',
+                fontWeight: 'bold'
+            },
+            axisLine: {
+                lineStyle: {
+                    color: '#4A2F0D'
+                }
+            },
+            splitLine: {
+                show: false
+            }
+        },
+        series: [
+            {
+                name: 'Pedidos',
+                type: 'bar',
+                barWidth: '50%',
+                data: data.map(item => ({
+                    value: item.value,
+                    itemStyle: {
+                        color: item.value >= 20 ? '#F59D2A' : item.value >= 10 ? '#FEC172' : '#FDE6CA'
+                    }
+                })),
+                label: {
+                    show: true,
+                    position: 'top',
+                    fontSize: 15,
                     fontFamily: 'Roboto, sans-serif',
-                    color: '#4A2F0D',
-                    weight: 'bold'
+                    color: '#626266'
                 }
             }
-        },
-        legend: {
-            enabled: false
-        },
-        tooltip: {
-            pointFormat: '<b>{point.y}</b> pedidos'
-        },
-        series: [{
-            name: 'Pedidos',
-            data: data,
-            dataLabels: {
-                enabled: true,
-                rotation: 0,
-                color: '#626266',
-                inside: false,
-                verticalAlign: 'bottom',
-                format: '{point.y}',
-                style: {
-                    fontSize: '15px',
-                    fontFamily: 'Roboto, sans-serif',
-                    textOutline: 'none'
-                },
-                overflow: 'none',
-                crop: false
-            }
-        }]
-    });
+        ]
+    };
+
+    option && myChart.setOption(option);
 });
+
 
 document.addEventListener('DOMContentLoaded', function () {
     function setGaugeValue(gaugeId, value) {
@@ -112,20 +118,10 @@ document.addEventListener('DOMContentLoaded', function () {
             existingLabels.remove();
         }
 
-        // Criar e posicionar labels corretamente
         let labelsContainer = document.createElement("div");
         labelsContainer.classList.add("gauge__labels");
         gauge.parentElement.appendChild(labelsContainer);
 
-        const leftLabel = document.createElement("span");
-        leftLabel.classList.add("gauge__label-left");
-        leftLabel.textContent = "0,00%";
-        labelsContainer.appendChild(leftLabel);
-
-        const rightLabel = document.createElement("span");
-        rightLabel.classList.add("gauge__label-right");
-        rightLabel.textContent = "100,00%";
-        labelsContainer.appendChild(rightLabel);
     }
 
     setGaugeValue("gauge-monthly", monthly_meta_percentage);
